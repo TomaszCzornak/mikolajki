@@ -138,14 +138,24 @@
             margin-top: 30px;
             padding-top: 30px;
         }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎅 Losowanie Mikołajkowe 🎁</h1>
         
+        <!-- Loading -->
+        <div id="loadingSection" class="section active">
+            <div class="loading">Ładowanie...</div>
+        </div>
+
         <!-- Sekcja: Wybór roli -->
-        <div id="roleSection" class="section active">
+        <div id="roleSection" class="section">
             <div class="info">
                 ℹ️ Wybierz swoją rolę
             </div>
@@ -163,26 +173,37 @@
             
             <h2 style="margin-bottom: 20px;">Panel organizatora</h2>
             
-            <div class="warning" id="adminWarning" style="display: none;">
-                ⚠️ Losowanie już zostało przeprowadzone! Jeśli dodasz nowe osoby lub wylosujesz ponownie, poprzednie wyniki zostaną usunięte.
+            <div class="info">
+                🔑 Hasło organizatora (ustaw przy pierwszym użyciu)
             </div>
             
             <div class="input-group">
-                <input type="text" id="nameInput" placeholder="Wpisz imię..." />
-                <button onclick="addPerson()">Dodaj</button>
+                <input type="password" id="adminPassword" placeholder="Hasło organizatora..." />
+                <button onclick="verifyAdmin()">Zaloguj</button>
             </div>
-            
-            <ul class="person-list" id="personList"></ul>
-            
-            <button class="btn-primary" id="drawBtn" onclick="performDraw()" disabled>
-                Wylosuj pary!
-            </button>
 
-            <div class="admin-panel">
-                <h3 style="margin-bottom: 15px;">Zarządzanie</h3>
-                <button onclick="resetDraw()" style="background: #dc3545; width: 100%;">
-                    🗑️ Zresetuj losowanie
+            <div id="adminPanel" style="display: none;">
+                <div class="warning" id="adminWarning" style="display: none;">
+                    ⚠️ Losowanie już zostało przeprowadzone! Jeśli wylosujesz ponownie, poprzednie wyniki zostaną usunięte.
+                </div>
+                
+                <div class="input-group">
+                    <input type="text" id="nameInput" placeholder="Wpisz imię..." />
+                    <button onclick="addPerson()">Dodaj</button>
+                </div>
+                
+                <ul class="person-list" id="personList"></ul>
+                
+                <button class="btn-primary" id="drawBtn" onclick="performDraw()" disabled>
+                    Wylosuj pary!
                 </button>
+
+                <div class="admin-panel">
+                    <h3 style="margin-bottom: 15px;">Zarządzanie</h3>
+                    <button onclick="resetDraw()" style="background: #dc3545; width: 100%;">
+                        🗑️ Zresetuj losowanie
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -203,23 +224,71 @@
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, get, remove, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEr6AJhe8Zyq0-Cv5RVAnsYj7LH8vd_24",
+            authDomain: "mikolajki-5c871.firebaseapp.com",
+            databaseURL: "https://mikolajki-5c871-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "mikolajki-5c871",
+            storageBucket: "mikolajki-5c871.firebasestorage.app",
+            messagingSenderId: "687394393040",
+            appId: "1:687394393040:web:a581cd0fed5e0b53db47d5",
+            measurementId: "G-FP8QYWCDB5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        window.db = database;
+        window.dbRef = ref;
+        window.dbSet = set;
+        window.dbGet = get;
+        window.dbRemove = remove;
+        window.dbOnValue = onValue;
+
+        loadInitialData();
+    </script>
+
     <script>
         let people = [];
         let assignments = {};
+        let adminPasswordHash = '';
 
-        function loadData() {
-            const savedPeople = localStorage.getItem('mikolajki_people');
-            const savedAssignments = localStorage.getItem('mikolajki_assignments');
-            
-            if (savedPeople) people = JSON.parse(savedPeople);
-            if (savedAssignments) assignments = JSON.parse(savedAssignments);
-            
-            updateAdminUI();
-        }
+        async function loadInitialData() {
+            try {
+                const peopleSnapshot = await window.dbGet(window.dbRef(window.db, 'people'));
+                const assignmentsSnapshot = await window.dbGet(window.dbRef(window.db, 'assignments'));
+                const passwordSnapshot = await window.dbGet(window.dbRef(window.db, 'adminPassword'));
 
-        function saveData() {
-            localStorage.setItem('mikolajki_people', JSON.stringify(people));
-            localStorage.setItem('mikolajki_assignments', JSON.stringify(assignments));
+                if (peopleSnapshot.exists()) {
+                    people = peopleSnapshot.val() || [];
+                }
+                if (assignmentsSnapshot.exists()) {
+                    assignments = assignmentsSnapshot.val() || {};
+                }
+                if (passwordSnapshot.exists()) {
+                    adminPasswordHash = passwordSnapshot.val();
+                }
+
+                window.dbOnValue(window.dbRef(window.db, 'people'), (snapshot) => {
+                    people = snapshot.val() || [];
+                    updateAdminUI();
+                });
+
+                window.dbOnValue(window.dbRef(window.db, 'assignments'), (snapshot) => {
+                    assignments = snapshot.val() || {};
+                    updateAdminUI();
+                });
+
+                showSection('role');
+            } catch (error) {
+                console.error('Błąd ładowania danych:', error);
+                document.getElementById('loadingSection').innerHTML = '<div class="warning">Błąd połączenia z bazą danych. Sprawdź konfigurację Firebase.</div>';
+            }
         }
 
         function showSection(section) {
@@ -229,30 +298,56 @@
                 document.getElementById('roleSection').classList.add('active');
             } else if (section === 'admin') {
                 document.getElementById('adminSection').classList.add('active');
-                loadData();
             } else if (section === 'participant') {
                 document.getElementById('participantSection').classList.add('active');
-                loadData();
                 document.getElementById('resultSection').innerHTML = '';
             }
         }
 
-        function addPerson() {
+        async function verifyAdmin() {
+            const password = document.getElementById('adminPassword').value;
+            
+            if (!password) {
+                alert('Wpisz hasło!');
+                return;
+            }
+
+            const hash = await simpleHash(password);
+
+            if (!adminPasswordHash) {
+                await window.dbSet(window.dbRef(window.db, 'adminPassword'), hash);
+                adminPasswordHash = hash;
+                document.getElementById('adminPanel').style.display = 'block';
+                alert('✅ Hasło organizatora zostało ustawione!');
+            } else if (hash === adminPasswordHash) {
+                document.getElementById('adminPanel').style.display = 'block';
+            } else {
+                alert('❌ Nieprawidłowe hasło organizatora!');
+            }
+        }
+
+        async function simpleHash(str) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(str);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function addPerson() {
             const input = document.getElementById('nameInput');
             const name = input.value.trim();
             
             if (name && !people.includes(name)) {
                 people.push(name);
+                await window.dbSet(window.dbRef(window.db, 'people'), people);
                 input.value = '';
-                saveData();
-                updateAdminUI();
             }
         }
 
-        function removePerson(name) {
+        async function removePerson(name) {
             people = people.filter(p => p !== name);
-            saveData();
-            updateAdminUI();
+            await window.dbSet(window.dbRef(window.db, 'people'), people);
         }
 
         function updateAdminUI() {
@@ -260,6 +355,8 @@
             const drawBtn = document.getElementById('drawBtn');
             const warning = document.getElementById('adminWarning');
             
+            if (!list) return;
+
             list.innerHTML = people.map(name => `
                 <li class="person-item">
                     <span>${name}</span>
@@ -267,11 +364,11 @@
                 </li>
             `).join('');
             
-            drawBtn.disabled = people.length < 2;
-            warning.style.display = Object.keys(assignments).length > 0 ? 'block' : 'none';
+            if (drawBtn) drawBtn.disabled = people.length < 2;
+            if (warning) warning.style.display = Object.keys(assignments).length > 0 ? 'block' : 'none';
         }
 
-        function performDraw() {
+        async function performDraw() {
             if (people.length < 2) return;
             
             let givers = [...people];
@@ -300,9 +397,7 @@
                 }
             }
             
-            assignments = newAssignments;
-            saveData();
-            
+            await window.dbSet(window.dbRef(window.db, 'assignments'), newAssignments);
             alert('✅ Losowanie zakończone! Każda osoba może teraz sprawdzić kogo ma obdarować.');
         }
 
@@ -342,13 +437,12 @@
             `;
         }
 
-        function resetDraw() {
+        async function resetDraw() {
             if (confirm('Czy na pewno chcesz zresetować losowanie? Wszyscy uczestnicy stracą dostęp do wyników.')) {
+                await window.dbRemove(window.dbRef(window.db, 'people'));
+                await window.dbRemove(window.dbRef(window.db, 'assignments'));
                 people = [];
                 assignments = {};
-                localStorage.removeItem('mikolajki_people');
-                localStorage.removeItem('mikolajki_assignments');
-                updateAdminUI();
                 alert('✅ Losowanie zostało zresetowane!');
             }
         }
@@ -360,8 +454,6 @@
         document.getElementById('participantName')?.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') checkAssignment();
         });
-
-        loadData();
     </script>
 </body>
 </html>
