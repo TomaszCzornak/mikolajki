@@ -1,459 +1,496 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Losowanie Mikołajkowe</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .container {
-            max-width: 600px;
-            width: 100%;
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        h1 {
-            color: #333;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-        .section {
-            display: none;
-        }
-        .section.active {
-            display: block;
-        }
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        input[type="text"], input[type="password"] {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-        button {
-            padding: 12px 24px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: background 0.3s;
-        }
-        button:hover { background: #5568d3; }
-        button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        .person-list {
-            list-style: none;
-            margin-bottom: 20px;
-        }
-        .person-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background: #f8f9fa;
-            margin-bottom: 8px;
-            border-radius: 8px;
-        }
-        .remove-btn {
-            padding: 6px 12px;
-            background: #dc3545;
-            font-size: 14px;
-        }
-        .remove-btn:hover { background: #c82333; }
-        .btn-primary {
-            width: 100%;
-            padding: 16px;
-            font-size: 18px;
-            background: #28a745;
-            margin-top: 20px;
-        }
-        .btn-primary:hover { background: #218838; }
-        .btn-secondary {
-            width: 100%;
-            padding: 16px;
-            font-size: 18px;
-            background: #667eea;
-            margin-top: 10px;
-        }
-        .result-box {
-            margin-top: 30px;
-            padding: 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 12px;
-            text-align: center;
-            color: white;
-        }
-        .result-box h2 {
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-        .result-name {
-            font-size: 32px;
-            font-weight: bold;
-            padding: 20px;
-            background: white;
-            color: #667eea;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-        .info {
-            background: #d1ecf1;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            color: #0c5460;
-        }
-        .warning {
-            background: #fff3cd;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            color: #856404;
-        }
-        .admin-panel {
-            border-top: 2px solid #ddd;
-            margin-top: 30px;
-            padding-top: 30px;
-        }
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Losowanie Mikołajkowe</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .section {
+      display: none;
+    }
+    .section.active {
+      display: block;
+    }
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input[type="text"], input[type="password"] {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      padding: 12px 24px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+    button:hover { background: #5568d3; }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .person-list {
+      list-style: none;
+      margin-bottom: 20px;
+    }
+    .person-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: #f8f9fa;
+      margin-bottom: 8px;
+      border-radius: 8px;
+    }
+    .remove-btn {
+      padding: 6px 12px;
+      background: #dc3545;
+      font-size: 14px;
+    }
+    .remove-btn:hover { background: #c82333; }
+    .btn-primary {
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      background: #28a745;
+      margin-top: 20px;
+    }
+    .btn-primary:hover { background: #218838; }
+    .btn-secondary {
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      background: #667eea;
+      margin-top: 10px;
+    }
+    .result-box {
+      margin-top: 30px;
+      padding: 30px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      text-align: center;
+      color: white;
+    }
+    .result-box h2 {
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+    .result-name {
+      font-size: 32px;
+      font-weight: bold;
+      padding: 20px;
+      background: white;
+      color: #667eea;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    .info {
+      background: #d1ecf1;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #0c5460;
+    }
+    .warning {
+      background: #fff3cd;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #856404;
+    }
+    .admin-panel {
+      border-top: 2px solid #ddd;
+      margin-top: 30px;
+      padding-top: 30px;
+    }
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎅 Losowanie Mikołajkowe 🎁</h1>
-        
-        <!-- Loading -->
-        <div id="loadingSection" class="section active">
-            <div class="loading">Ładowanie...</div>
-        </div>
+<div class="container">
+  <h1>🎅 Losowanie Mikołajkowe 🎁</h1>
 
-        <!-- Sekcja: Wybór roli -->
-        <div id="roleSection" class="section">
-            <div class="info">
-                ℹ️ Wybierz swoją rolę
-            </div>
-            <button class="btn-primary" onclick="showSection('admin')">
-                👨‍💼 Jestem organizatorem
-            </button>
-            <button class="btn-secondary" onclick="showSection('participant')">
-                🎁 Chcę sprawdzić kogo mam obdarować
-            </button>
-        </div>
+  <!-- Loading -->
+  <div id="loadingSection" class="section active">
+    <div class="loading">Ładowanie...</div>
+  </div>
 
-        <!-- Sekcja: Organizator -->
-        <div id="adminSection" class="section">
-            <button onclick="showSection('role')" style="margin-bottom: 20px;">← Powrót</button>
-            
-            <h2 style="margin-bottom: 20px;">Panel organizatora</h2>
-            
-            <div class="info">
-                🔑 Hasło organizatora (ustaw przy pierwszym użyciu)
-            </div>
-            
-            <div class="input-group">
-                <input type="password" id="adminPassword" placeholder="Hasło organizatora..." />
-                <button onclick="verifyAdmin()">Zaloguj</button>
-            </div>
+  <!-- Sekcja: Wybór roli -->
+  <div id="roleSection" class="section">
+    <div class="info">
+      ℹ️ Wybierz swoją rolę
+    </div>
+    <button class="btn-primary" onclick="showSection('admin')">
+      👨‍💼 Jestem organizatorem
+    </button>
+    <button class="btn-secondary" onclick="showSection('participant')">
+      🎁 Chcę sprawdzić kogo mam obdarować
+    </button>
+  </div>
 
-            <div id="adminPanel" style="display: none;">
-                <div class="warning" id="adminWarning" style="display: none;">
-                    ⚠️ Losowanie już zostało przeprowadzone! Jeśli wylosujesz ponownie, poprzednie wyniki zostaną usunięte.
-                </div>
-                
-                <div class="input-group">
-                    <input type="text" id="nameInput" placeholder="Wpisz imię..." />
-                    <button onclick="addPerson()">Dodaj</button>
-                </div>
-                
-                <ul class="person-list" id="personList"></ul>
-                
-                <button class="btn-primary" id="drawBtn" onclick="performDraw()" disabled>
-                    Wylosuj pary!
-                </button>
+  <!-- Sekcja: Organizator -->
+  <div id="adminSection" class="section">
+    <button onclick="showSection('role')" style="margin-bottom: 20px;">← Powrót</button>
 
-                <div class="admin-panel">
-                    <h3 style="margin-bottom: 15px;">Zarządzanie</h3>
-                    <button onclick="resetDraw()" style="background: #dc3545; width: 100%;">
-                        🗑️ Zresetuj losowanie
-                    </button>
-                </div>
-            </div>
-        </div>
+    <h2 style="margin-bottom: 20px;">Panel organizatora</h2>
 
-        <!-- Sekcja: Uczestnik -->
-        <div id="participantSection" class="section">
-            <button onclick="showSection('role')" style="margin-bottom: 20px;">← Powrót</button>
-            
-            <div class="info">
-                ℹ️ Wpisz swoje imię, aby zobaczyć kogo masz obdarować
-            </div>
-            
-            <div class="input-group">
-                <input type="text" id="participantName" placeholder="Twoje imię..." />
-                <button onclick="checkAssignment()">Sprawdź</button>
-            </div>
-
-            <div id="resultSection"></div>
-        </div>
+    <div class="info">
+      🔑 Hasło organizatora (ustaw przy pierwszym użyciu)
     </div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, set, get, remove, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+    <div class="input-group">
+      <input type="password" id="adminPassword" placeholder="Hasło organizatora..." />
+      <button onclick="verifyAdmin()">Zaloguj</button>
+    </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDEr6AJhe8Zyq0-Cv5RVAnsYj7LH8vd_24",
-            authDomain: "mikolajki-5c871.firebaseapp.com",
-            databaseURL: "https://mikolajki-5c871-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "mikolajki-5c871",
-            storageBucket: "mikolajki-5c871.firebasestorage.app",
-            messagingSenderId: "687394393040",
-            appId: "1:687394393040:web:a581cd0fed5e0b53db47d5",
-            measurementId: "G-FP8QYWCDB5"
-        };
+    <div id="adminPanel" style="display: none;">
+      <div class="warning" id="adminWarning" style="display: none;">
+        ⚠️ Losowanie już zostało przeprowadzone! Jeśli wylosujesz ponownie, poprzednie wyniki zostaną usunięte.
+      </div>
 
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
+      <div class="input-group">
+        <input type="text" id="nameInput" placeholder="Wpisz imię..." />
+        <button onclick="addPerson()">Dodaj</button>
+      </div>
 
-        window.db = database;
-        window.dbRef = ref;
-        window.dbSet = set;
-        window.dbGet = get;
-        window.dbRemove = remove;
-        window.dbOnValue = onValue;
+      <ul class="person-list" id="personList"></ul>
 
-        loadInitialData();
-    </script>
+      <button class="btn-primary" id="drawBtn" onclick="performDraw()" disabled>
+        Wylosuj pary!
+      </button>
 
-    <script>
-        let people = [];
-        let assignments = {};
-        let adminPasswordHash = '';
+      <div class="admin-panel">
+        <h3 style="margin-bottom: 15px;">Zarządzanie</h3>
+        <button onclick="resetDraw()" style="background: #dc3545; width: 100%;">
+          🗑️ Zresetuj losowanie
+        </button>
+      </div>
+    </div>
+  </div>
 
-        async function loadInitialData() {
-            try {
-                const peopleSnapshot = await window.dbGet(window.dbRef(window.db, 'people'));
-                const assignmentsSnapshot = await window.dbGet(window.dbRef(window.db, 'assignments'));
-                const passwordSnapshot = await window.dbGet(window.dbRef(window.db, 'adminPassword'));
+  <!-- Sekcja: Uczestnik -->
+  <div id="participantSection" class="section">
+    <button onclick="showSection('role')" style="margin-bottom: 20px;">← Powrót</button>
 
-                if (peopleSnapshot.exists()) {
-                    people = peopleSnapshot.val() || [];
-                }
-                if (assignmentsSnapshot.exists()) {
-                    assignments = assignmentsSnapshot.val() || {};
-                }
-                if (passwordSnapshot.exists()) {
-                    adminPasswordHash = passwordSnapshot.val();
-                }
+    <div class="info">
+      ℹ️ Wpisz swoje imię, aby zobaczyć kogo masz obdarować
+    </div>
 
-                window.dbOnValue(window.dbRef(window.db, 'people'), (snapshot) => {
-                    people = snapshot.val() || [];
-                    updateAdminUI();
-                });
+    <div class="input-group">
+      <input type="text" id="participantName" placeholder="Twoje imię..." />
+      <button onclick="checkAssignment()">Sprawdź</button>
+    </div>
 
-                window.dbOnValue(window.dbRef(window.db, 'assignments'), (snapshot) => {
-                    assignments = snapshot.val() || {};
-                    updateAdminUI();
-                });
+    <div id="resultSection"></div>
+  </div>
+</div>
 
-                showSection('role');
-            } catch (error) {
-                console.error('Błąd ładowania danych:', error);
-                document.getElementById('loadingSection').innerHTML = '<div class="warning">Błąd połączenia z bazą danych. Sprawdź konfigurację Firebase.</div>';
-            }
-        }
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+  import { getDatabase, ref, set, get, remove, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-        function showSection(section) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            
-            if (section === 'role') {
-                document.getElementById('roleSection').classList.add('active');
-            } else if (section === 'admin') {
-                document.getElementById('adminSection').classList.add('active');
-            } else if (section === 'participant') {
-                document.getElementById('participantSection').classList.add('active');
-                document.getElementById('resultSection').innerHTML = '';
-            }
-        }
+  const firebaseConfig = {
+    apiKey: "AIzaSyDEr6AJhe8Zyq0-Cv5RVAnsYj7LH8vd_24",
+    authDomain: "mikolajki-5c871.firebaseapp.com",
+    databaseURL: "https://mikolajki-5c871-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "mikolajki-5c871",
+    storageBucket: "mikolajki-5c871.firebasestorage.app",
+    messagingSenderId: "687394393040",
+    appId: "1:687394393040:web:a581cd0fed5e0b53db47d5",
+    measurementId: "G-FP8QYWCDB5"
+  };
 
-        async function verifyAdmin() {
-            const password = document.getElementById('adminPassword').value;
-            
-            if (!password) {
-                alert('Wpisz hasło!');
-                return;
-            }
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
 
-            const hash = await simpleHash(password);
+  window.db = database;
+  window.dbRef = ref;
+  window.dbSet = set;
+  window.dbGet = get;
+  window.dbRemove = remove;
+  window.dbOnValue = onValue;
 
-            if (!adminPasswordHash) {
-                await window.dbSet(window.dbRef(window.db, 'adminPassword'), hash);
-                adminPasswordHash = hash;
-                document.getElementById('adminPanel').style.display = 'block';
-                alert('✅ Hasło organizatora zostało ustawione!');
-            } else if (hash === adminPasswordHash) {
-                document.getElementById('adminPanel').style.display = 'block';
-            } else {
-                alert('❌ Nieprawidłowe hasło organizatora!');
-            }
-        }
+  loadInitialData();
+</script>
 
-        async function simpleHash(str) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(str);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
+<script>
+  let people = [];
+  let assignments = {};
+  let adminPasswordHash = '';
 
-        async function addPerson() {
-            const input = document.getElementById('nameInput');
-            const name = input.value.trim();
-            
-            if (name && !people.includes(name)) {
-                people.push(name);
-                await window.dbSet(window.dbRef(window.db, 'people'), people);
-                input.value = '';
-            }
-        }
+  async function loadInitialData() {
+    try {
+      const peopleSnapshot = await window.dbGet(window.dbRef(window.db, 'people'));
+      const assignmentsSnapshot = await window.dbGet(window.dbRef(window.db, 'assignments'));
+      const passwordSnapshot = await window.dbGet(window.dbRef(window.db, 'adminPassword'));
 
-        async function removePerson(name) {
-            people = people.filter(p => p !== name);
-            await window.dbSet(window.dbRef(window.db, 'people'), people);
-        }
+      if (peopleSnapshot.exists()) {
+        people = peopleSnapshot.val() || [];
+      }
+      if (assignmentsSnapshot.exists()) {
+        assignments = assignmentsSnapshot.val() || {};
+      }
+      if (passwordSnapshot.exists()) {
+        adminPasswordHash = passwordSnapshot.val();
+      }
 
-        function updateAdminUI() {
-            const list = document.getElementById('personList');
-            const drawBtn = document.getElementById('drawBtn');
-            const warning = document.getElementById('adminWarning');
-            
-            if (!list) return;
+      window.dbOnValue(window.dbRef(window.db, 'people'), (snapshot) => {
+        people = snapshot.val() || [];
+        updateAdminUI();
+      });
 
-            list.innerHTML = people.map(name => `
+      window.dbOnValue(window.dbRef(window.db, 'assignments'), (snapshot) => {
+        assignments = snapshot.val() || {};
+        updateAdminUI();
+      });
+
+      showSection('role');
+    } catch (error) {
+      console.error('Błąd ładowania danych:', error);
+      document.getElementById('loadingSection').innerHTML = '<div class="warning">Błąd połączenia z bazą danych. Sprawdź konfigurację Firebase.</div>';
+    }
+  }
+
+  function showSection(section) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+
+    if (section === 'role') {
+      document.getElementById('roleSection').classList.add('active');
+    } else if (section === 'admin') {
+      document.getElementById('adminSection').classList.add('active');
+    } else if (section === 'participant') {
+      document.getElementById('participantSection').classList.add('active');
+      document.getElementById('resultSection').innerHTML = '';
+    }
+  }
+
+  async function verifyAdmin() {
+    const password = document.getElementById('adminPassword').value;
+
+    if (!password) {
+      alert('Wpisz hasło!');
+      return;
+    }
+
+    const hash = await simpleHash(password);
+
+    if (!adminPasswordHash) {
+      await window.dbSet(window.dbRef(window.db, 'adminPassword'), hash);
+      adminPasswordHash = hash;
+      document.getElementById('adminPanel').style.display = 'block';
+      alert('✅ Hasło organizatora zostało ustawione!');
+    } else if (hash === adminPasswordHash) {
+      document.getElementById('adminPanel').style.display = 'block';
+    } else {
+      alert('❌ Nieprawidłowe hasło organizatora!');
+    }
+  }
+
+  async function simpleHash(str) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function addPerson() {
+    const input = document.getElementById('nameInput');
+    const name = input.value.trim();
+
+    if (name && !people.includes(name)) {
+      people.push(name);
+      await window.dbSet(window.dbRef(window.db, 'people'), people);
+      input.value = '';
+    }
+  }
+
+  async function removePerson(name) {
+    people = people.filter(p => p !== name);
+    await window.dbSet(window.dbRef(window.db, 'people'), people);
+  }
+
+  function updateAdminUI() {
+    const list = document.getElementById('personList');
+    const drawBtn = document.getElementById('drawBtn');
+    const warning = document.getElementById('adminWarning');
+
+    if (!list) return;
+
+    list.innerHTML = people.map(name => `
                 <li class="person-item">
                     <span>${name}</span>
                     <button class="remove-btn" onclick="removePerson('${name}')">Usuń</button>
                 </li>
             `).join('');
-            
-            if (drawBtn) drawBtn.disabled = people.length < 2;
-            if (warning) warning.style.display = Object.keys(assignments).length > 0 ? 'block' : 'none';
+
+    if (drawBtn) drawBtn.disabled = people.length < 2;
+    if (warning) warning.style.display = Object.keys(assignments).length > 0 ? 'block' : 'none';
+  }
+
+  async function performDraw() {
+    if (people.length < 2) return;
+
+    // Fisher-Yates shuffle dla lepszej losowości
+    function shuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        // Użyj crypto.getRandomValues dla prawdziwej losowości
+        const randomValues = new Uint32Array(1);
+        crypto.getRandomValues(randomValues);
+        const j = randomValues[0] % (i + 1);
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    let valid = false;
+    let newAssignments = {};
+    let attempts = 0;
+    const maxAttempts = 1000;
+
+    while (!valid && attempts < maxAttempts) {
+      attempts++;
+      newAssignments = {};
+
+      // Losowo przemieszaj obie listy
+      let givers = shuffle([...people]);
+      let receivers = shuffle([...people]);
+
+      valid = true;
+
+      for (let i = 0; i < givers.length; i++) {
+        let giver = givers[i];
+        let receiver = receivers[i];
+
+        // Jeśli wylosował sam siebie, spróbuj zamienić z następnym
+        if (giver === receiver) {
+          // Znajdź kogoś do zamiany
+          let swapIndex = -1;
+          for (let j = i + 1; j < receivers.length; j++) {
+            if (receivers[j] !== giver && receivers[i] !== givers[j]) {
+              swapIndex = j;
+              break;
+            }
+          }
+
+          if (swapIndex !== -1) {
+            // Zamień
+            [receivers[i], receivers[swapIndex]] = [receivers[swapIndex], receivers[i]];
+            receiver = receivers[i];
+          } else {
+            // Nie można znaleźć zamiany, spróbuj od nowa
+            valid = false;
+            break;
+          }
         }
 
-        async function performDraw() {
-            if (people.length < 2) return;
-            
-            let givers = [...people];
-            let receivers = [...people];
-            let newAssignments = {};
-            let valid = false;
-            
-            while (!valid) {
-                newAssignments = {};
-                let tempReceivers = [...receivers];
-                valid = true;
-                
-                for (let giver of givers) {
-                    let availableReceivers = tempReceivers.filter(r => r !== giver);
-                    
-                    if (availableReceivers.length === 0) {
-                        valid = false;
-                        break;
-                    }
-                    
-                    let randomIndex = Math.floor(Math.random() * availableReceivers.length);
-                    let receiver = availableReceivers[randomIndex];
-                    
-                    newAssignments[giver] = receiver;
-                    tempReceivers = tempReceivers.filter(r => r !== receiver);
-                }
-            }
-            
-            await window.dbSet(window.dbRef(window.db, 'assignments'), newAssignments);
-            alert('✅ Losowanie zakończone! Każda osoba może teraz sprawdzić kogo ma obdarować.');
-        }
+        newAssignments[giver] = receiver;
+      }
+    }
 
-        function checkAssignment() {
-            const name = document.getElementById('participantName').value.trim();
-            const resultSection = document.getElementById('resultSection');
-            
-            if (!name) {
-                alert('Wpisz swoje imię!');
-                return;
-            }
-            
-            if (Object.keys(assignments).length === 0) {
-                resultSection.innerHTML = `
+    if (!valid) {
+      alert('❌ Błąd losowania. Spróbuj ponownie.');
+      return;
+    }
+
+    await window.dbSet(window.dbRef(window.db, 'assignments'), newAssignments);
+    alert('✅ Losowanie zakończone! Każda osoba może teraz sprawdzić kogo ma obdarować.');
+  }
+
+  function checkAssignment() {
+    const name = document.getElementById('participantName').value.trim();
+    const resultSection = document.getElementById('resultSection');
+
+    if (!name) {
+      alert('Wpisz swoje imię!');
+      return;
+    }
+
+    if (Object.keys(assignments).length === 0) {
+      resultSection.innerHTML = `
                     <div class="warning" style="margin-top: 20px;">
                         ⚠️ Losowanie jeszcze nie zostało przeprowadzone! Poproś organizatora o uruchomienie losowania.
                     </div>
                 `;
-                return;
-            }
-            
-            if (!assignments[name]) {
-                resultSection.innerHTML = `
+      return;
+    }
+
+    if (!assignments[name]) {
+      resultSection.innerHTML = `
                     <div class="warning" style="margin-top: 20px;">
                         ⚠️ Nie znaleziono imienia "${name}" na liście uczestników. Sprawdź czy wpisałeś/aś imię poprawnie.
                     </div>
                 `;
-                return;
-            }
-            
-            resultSection.innerHTML = `
+      return;
+    }
+
+    resultSection.innerHTML = `
                 <div class="result-box">
                     <h2>Kupujesz prezent dla:</h2>
                     <div class="result-name">${assignments[name]}</div>
                     <p style="font-size: 14px; opacity: 0.9;">Zachowaj to w tajemnicy! 🤫</p>
                 </div>
             `;
-        }
+  }
 
-        async function resetDraw() {
-            if (confirm('Czy na pewno chcesz zresetować losowanie? Wszyscy uczestnicy stracą dostęp do wyników.')) {
-                await window.dbRemove(window.dbRef(window.db, 'people'));
-                await window.dbRemove(window.dbRef(window.db, 'assignments'));
-                people = [];
-                assignments = {};
-                alert('✅ Losowanie zostało zresetowane!');
-            }
-        }
+  async function resetDraw() {
+    if (confirm('Czy na pewno chcesz zresetować losowanie? Wszyscy uczestnicy stracą dostęp do wyników.')) {
+      await window.dbRemove(window.dbRef(window.db, 'people'));
+      await window.dbRemove(window.dbRef(window.db, 'assignments'));
+      people = [];
+      assignments = {};
+      alert('✅ Losowanie zostało zresetowane!');
+    }
+  }
 
-        document.getElementById('nameInput')?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addPerson();
-        });
+  document.getElementById('nameInput')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') addPerson();
+  });
 
-        document.getElementById('participantName')?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') checkAssignment();
-        });
-    </script>
+  document.getElementById('participantName')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') checkAssignment();
+  });
+</script>
 </body>
 </html>
