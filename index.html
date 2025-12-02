@@ -160,6 +160,15 @@
             color: #856404;
             line-height: 1.5;
         }
+        .error {
+            background: #f8d7da;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #721c24;
+            line-height: 1.5;
+        }
         .admin-panel {
             border-top: 2px solid #ddd;
             margin-top: 30px;
@@ -204,6 +213,10 @@
             padding: 6px 12px;
             border-radius: 4px;
             letter-spacing: 1px;
+        }
+        .code-used {
+            color: #dc3545;
+            background: #f8d7da;
         }
         .copy-btn {
             padding: 6px 12px;
@@ -276,6 +289,10 @@
                     ⚠️ Losowanie już zostało przeprowadzone! Jeśli wylosujesz ponownie, poprzednie kody zostaną unieważnione.
                 </div>
                 
+                <div class="info">
+                    ⚠️ <strong>WAŻNE:</strong> Każdy kod działa tylko <strong>JEDEN RAZ</strong>. Jeśli użyjesz kodu przed uczestnikiem, zostaniesz przyłapany - uczestnik zobaczy że kod został już wykorzystany!
+                </div>
+                
                 <div class="input-group">
                     <input type="text" id="nameInput" placeholder="Wpisz imię..." />
                     <button onclick="addPerson()">Dodaj</button>
@@ -291,6 +308,9 @@
 
                 <div class="admin-panel">
                     <h3 style="margin-bottom: 15px;">Zarządzanie</h3>
+                    <button onclick="showUsageStatus()" style="background: #17a2b8; width: 100%; margin-bottom: 10px;">
+                        📊 Sprawdź status kodów
+                    </button>
                     <button onclick="resetDraw()" style="background: #dc3545; width: 100%;">
                         🗑️ Zresetuj losowanie
                     </button>
@@ -303,11 +323,13 @@
             <button onclick="showSection('role')" style="margin-bottom: 20px;">← Powrót</button>
             
             <div class="info">
-                ℹ️ Wpisz kod dostępu, który otrzymałeś od organizatora
+                📱 <strong>Wpisz kod dostępu</strong><br><br>
+                Powinieneś otrzymać 6-znakowy kod (np. A3X9K2) od organizatora przez SMS, WhatsApp lub Messenger.<br><br>
+                ⚠️ <strong>Każdy kod działa tylko JEDEN RAZ!</strong> Jeśli zobaczysz komunikat "kod już użyty" - ktoś (prawdopodobnie organizator) użył go przed Tobą.
             </div>
             
             <div class="input-group">
-                <input type="text" id="accessCode" placeholder="Kod dostępu (np. A1B2C3)" style="text-transform: uppercase;" />
+                <input type="text" id="accessCode" placeholder="Kod dostępu (np. A1B2C3)" style="text-transform: uppercase;" maxlength="6" />
                 <button onclick="checkAssignment()">Sprawdź</button>
             </div>
 
@@ -318,7 +340,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, set, get, remove, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getDatabase, ref, set, get, remove, onValue, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyDEr6AJhe8Zyq0-Cv5RVAnsYj7LH8vd_24",
@@ -340,6 +362,7 @@
         window.dbGet = get;
         window.dbRemove = remove;
         window.dbOnValue = onValue;
+        window.dbUpdate = update;
 
         loadInitialData();
     </script>
@@ -554,14 +577,16 @@
                 usedCodes.add(code);
                 newAccessCodes[code] = {
                     name: person,
-                    target: newAssignments[person]
+                    target: newAssignments[person],
+                    used: false,
+                    usedAt: null
                 };
             }
             
             await window.dbSet(window.dbRef(window.db, 'assignments'), newAssignments);
             await window.dbSet(window.dbRef(window.db, 'accessCodes'), newAccessCodes);
             
-            alert('✅ Losowanie zakończone! Kody dostępu zostały wygenerowane. Prześlij każdej osobie jej unikalny kod.');
+            alert('✅ Losowanie zakończone! Kody dostępu zostały wygenerowane.\n\n⚠️ PAMIĘTAJ: Każdy kod działa tylko RAZ! Jeśli użyjesz kodu uczestnika, zostaniesz przyłapany.');
             displayCodes();
         }
 
@@ -575,48 +600,61 @@
             }
 
             const codesList = Object.entries(accessCodes).map(([code, data]) => {
+                const statusClass = data.used ? 'code-used' : '';
+                const statusText = data.used ? '✓ UŻYTY' : code;
                 return `
                     <div class="code-item">
                         <strong>${data.name}</strong>
-                        <span class="code-value">${code}</span>
-                        <button class="copy-btn" onclick="copyCode('${code}', '${data.name}')">Kopiuj</button>
+                        <span class="code-value ${statusClass}">${statusText}</span>
+                        <button class="copy-btn" onclick="copyCode('${code}', '${data.name}')" ${data.used ? 'disabled' : ''}>
+                            ${data.used ? 'Użyty' : 'Kopiuj'}
+                        </button>
                     </div>
                 `;
             }).join('');
 
             codesDisplay.innerHTML = `
                 <div class="warning" style="margin-top: 20px;">
-                    📱 Wyślij każdej osobie jej unikalny kod (SMS/WhatsApp/Messenger):
+                    📱 Wyślij każdej osobie jej unikalny kod (SMS/WhatsApp/Messenger):<br>
+                    <strong>⚠️ NIE UŻYWAJ kodów sam - każdy kod działa tylko RAZ!</strong>
                 </div>
                 <div class="codes-list">
                     ${codesList}
                 </div>
                 <button onclick="copyAllCodes()" style="width: 100%; margin-top: 10px; background: #28a745;">
-                    📋 Kopiuj wszystkie kody
+                    📋 Kopiuj wszystkie kody (do wysłania)
                 </button>
             `;
         }
 
         function copyCode(code, name) {
-            const text = `Cześć ${name}! Twój kod do losowania mikołajkowego: ${code}\n\nWejdź na: ${window.location.origin}${window.location.pathname}`;
+            const data = accessCodes[code];
+            if (data.used) {
+                alert('❌ Ten kod został już użyty!');
+                return;
+            }
+            
+            const text = `Cześć ${name}! 🎅\n\nTwój kod do losowania mikołajkowego: ${code}\n\n⚠️ Kod działa tylko RAZ - użyj go ostrożnie!\n\nWejdź na: ${window.location.origin}${window.location.pathname}`;
             navigator.clipboard.writeText(text).then(() => {
-                alert(`✅ Skopiowano wiadomość dla: ${name}`);
+                alert(`✅ Skopiowano wiadomość dla: ${name}\n\nTeraz wyślij ją przez SMS/WhatsApp/Messenger`);
             });
         }
 
         function copyAllCodes() {
-            let allText = 'Kody dostępu do losowania mikołajkowego:\n\n';
+            let allText = '🎅 Kody dostępu do losowania mikołajkowego:\n\n';
             Object.entries(accessCodes).forEach(([code, data]) => {
-                allText += `${data.name}: ${code}\n`;
+                if (!data.used) {
+                    allText += `${data.name}: ${code}\n`;
+                }
             });
-            allText += `\nLink: ${window.location.origin}${window.location.pathname}`;
+            allText += `\n⚠️ Każdy kod działa tylko RAZ!\nLink: ${window.location.origin}${window.location.pathname}`;
             
             navigator.clipboard.writeText(allText).then(() => {
-                alert('✅ Skopiowano wszystkie kody!');
+                alert('✅ Skopiowano wszystkie niewykorzystane kody!\n\nRoześlij je uczestnikom.');
             });
         }
 
-        function checkAssignment() {
+        async function checkAssignment() {
             const code = document.getElementById('accessCode').value.trim().toUpperCase();
             const resultSection = document.getElementById('resultSection');
             
@@ -645,18 +683,56 @@
             
             const data = accessCodes[code];
             
+            // Sprawdź czy kod został już użyty
+            if (data.used) {
+                resultSection.innerHTML = `
+                    <div class="error" style="margin-top: 20px;">
+                        <h3 style="margin-bottom: 10px;">🚨 KOD JUŻ ZOSTAŁ UŻYTY!</h3>
+                        <p style="margin-bottom: 10px;">Ten kod został wykorzystany wcześniej${data.usedAt ? ' dnia ' + new Date(data.usedAt).toLocaleString('pl-PL') : ''}.</p>
+                        <p><strong>Ktoś (prawdopodobnie organizator) użył Twojego kodu przed Tobą!</strong></p>
+                        <p style="margin-top: 10px;">Skontaktuj się z organizatorem.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Oznacz kod jako użyty
+            const updates = {};
+            updates[`accessCodes/${code}/used`] = true;
+            updates[`accessCodes/${code}/usedAt`] = new Date().toISOString();
+            
+            await window.dbUpdate(window.dbRef(window.db), updates);
+            
             resultSection.innerHTML = `
                 <div class="result-box">
                     <h2>Cześć ${data.name}! 👋</h2>
                     <p style="margin-bottom: 10px;">Kupujesz prezent dla:</p>
                     <div class="result-name">${data.target}</div>
                     <p style="font-size: 14px; opacity: 0.9;">Zachowaj to w tajemnicy! 🤫</p>
+                    <p style="font-size: 12px; opacity: 0.8; margin-top: 15px;">Kod został użyty i nie można go wykorzystać ponownie.</p>
                 </div>
             `;
+            
+            // Wyczyść pole kodu
+            document.getElementById('accessCode').value = '';
+        }
+
+        function showUsageStatus() {
+            const total = Object.keys(accessCodes).length;
+            const used = Object.values(accessCodes).filter(d => d.used).length;
+            const unused = total - used;
+            
+            let details = 'Status kodów:\n\n';
+            Object.entries(accessCodes).forEach(([code, data]) => {
+                const status = data.used ? '✓ UŻYTY' : '○ Nieużyty';
+                details += `${data.name}: ${status}\n`;
+            });
+            
+            alert(`📊 Status kodów:\n\nWszystkich: ${total}\nUżytych: ${used}\nNieużytych: ${unused}\n\n${details}`);
         }
 
         async function resetDraw() {
-            if (confirm('Czy na pewno chcesz zresetować losowanie? Wszyscy uczestnicy stracą dostęp do wyników i wszystkie kody zostaną unieważnione.')) {
+            if (confirm('Czy na pewno chcesz zresetować losowanie?\n\nWszyscy uczestnicy stracą dostęp do wyników i wszystkie kody zostaną unieważnione.')) {
                 await window.dbRemove(window.dbRef(window.db, 'people'));
                 await window.dbRemove(window.dbRef(window.db, 'assignments'));
                 await window.dbRemove(window.dbRef(window.db, 'accessCodes'));
@@ -674,6 +750,11 @@
 
         document.getElementById('accessCode')?.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') checkAssignment();
+        });
+        
+        // Auto-uppercase dla kodu
+        document.getElementById('accessCode')?.addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase();
         });
     </script>
 </body>
